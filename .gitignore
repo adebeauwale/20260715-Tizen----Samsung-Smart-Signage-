@@ -1,0 +1,17 @@
+# Build output
+.buildResult/
+*.wgt
+
+# Signing material — MUST NEVER be committed or packaged.
+# These were found inside the published VYPA2.wgt; see README.
+author.p12
+author.pwd
+distributor.p12
+distributor.pwd
+*.pfx
+*.pem
+*.key
+
+# IDE
+.sign/
+.settings/

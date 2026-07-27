@@ -1,0 +1,436 @@
+/* =========================================
+   GLOBAL RESET (TV SAFE)
+========================================= */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: black;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  position: relative;
+}
+
+/* Set by js/tep.js while a Unipicture (SoC scaler) image is on screen.
+   Clears the opaque backdrop so the scaler plane is visible if it composites
+   below the web layer. Only ever applied on TEP-capable panels. */
+body.tep-uni-active,
+body.tep-uni-active #playerScreen {
+  background: transparent;
+}
+
+.screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: none;
+  overflow: hidden;
+}
+
+/* =========================================
+   LOADING SCREEN
+========================================= */
+
+#loadingScreen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #000;
+  color: white;
+  flex-direction: column;
+}
+
+.loader {
+  border: 6px solid #eee;
+  border-top: 6px solid #0047FF;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* =========================================
+   ERROR SCREEN
+========================================= */
+
+#errorScreen {
+  background: #111;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* =========================================
+   SUCCESS SCREEN
+========================================= */
+
+#successScreen {
+  background: #000;
+  color: #00FF88;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* =========================================
+   PLAYER SCREEN
+========================================= */
+
+#playerScreen {
+  background: black;
+  position: relative;
+}
+
+/* Base video / image reset — individual elements use inline styles */
+video,
+img {
+  width: 100vw;
+  height: 100vh;
+  object-fit: contain;
+}
+
+/* =========================================
+   INTRO VIDEO
+========================================= */
+
+#introVideo {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  display: block;
+}
+
+/* =========================================
+   ✅ NEW: AUDIO VISUALIZER CANVAS
+========================================= */
+
+#audioVisualizer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  display: none;
+  z-index: 1;
+}
+
+/* =========================================
+   ✅ NEW: WEB URL / DASHBOARD WEBVIEW
+========================================= */
+
+#webviewFrame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #000;
+  display: none;
+  z-index: 2;
+}
+
+/* =========================================
+   PAIRING SCREEN (LANDSCAPE DEFAULT)
+========================================= */
+
+#pairingScreen {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #0047FF;
+  color: white;
+  overflow: hidden;
+}
+
+.pairing-top {
+  position: absolute;
+  top: 60px;
+  right: 80px;
+  text-align: center;
+  z-index: 3;
+}
+
+#codeTitle {
+  font-size: 30px;
+  font-weight: bold;
+}
+
+#codeBox {
+  border: 3px solid white;
+  width: 360px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px auto;
+  box-sizing: border-box;
+}
+
+#pairingCode {
+  font-size: 70px;
+  color: #FCFF00;
+  font-weight: bold;
+}
+
+#countdown {
+  font-size: 30px;
+}
+
+.pairing-steps {
+  position: absolute;
+  left: 80px;
+  top: 180px;
+  width: 900px;
+  font-size: 30px;
+  z-index: 2;
+}
+
+.pairing-steps h2 {
+  color: #FCFF00;
+  text-decoration: underline;
+}
+
+.pairing-steps .step {
+  color: #FCFF00;
+  font-weight: bold;
+}
+
+.logo {
+  position: absolute;
+  bottom: 40px;
+  right: 60px;
+  width: 400px;
+  height: auto;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* =========================================
+   PAIRING SCREEN - PORTRAIT OVERRIDES
+========================================= */
+
+.portrait #pairingScreen {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.portrait .pairing-top {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  width: calc(100vw - 40px);
+  max-width: 700px;
+  text-align: center;
+}
+
+.portrait #codeTitle {
+  font-size: 28px;
+}
+
+.portrait #codeBox {
+  width: 420px;
+  max-width: 90vw;
+  height: 180px;
+  margin: 18px auto;
+}
+
+.portrait #pairingCode {
+  font-size: 84px;
+  letter-spacing: 6px;
+}
+
+.portrait #countdown {
+  font-size: 24px;
+}
+
+.portrait .pairing-steps {
+  position: absolute;
+  top: 280px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100vw - 60px);
+  max-width: 900px;
+  font-size: 24px;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.portrait .pairing-steps h2 {
+  font-size: 32px;
+  margin: 0 0 20px 0;
+}
+
+.portrait .logo {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+  max-width: 70vw;
+  height: auto;
+}
+
+/* =========================================
+   NO PLAYLIST / CENTERED SCREENS
+========================================= */
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  color: white;
+}
+
+#noPlaylistScreen h2,
+#noPlaylistScreen p {
+  width: 100%;
+  text-align: center;
+}
+
+.center h2 {
+  font-size: 55px;
+}
+
+.center p {
+  font-size: 30px;
+}
+
+#noPlaylistScreen {
+  background: #111;
+  color: white;
+}
+
+/* =========================================
+   BUFFER OVERLAY
+========================================= */
+
+.buffer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #0B4DFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.buffer-box {
+  text-align: center;
+  color: #fff;
+  font-family: Arial, sans-serif;
+}
+
+.buffer-logo {
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 18px;
+}
+
+.buffer-text {
+  font-size: 22px;
+  font-weight: 600;
+  opacity: 0.95;
+}
+
+/* animated dots */
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0.3;
+  animation: dotPulse 1s infinite ease-in-out;
+}
+
+.dots span:nth-child(2) { animation-delay: 0.15s; }
+.dots span:nth-child(3) { animation-delay: 0.30s; }
+
+@keyframes dotPulse {
+  0%, 100% { transform: translateY(0); opacity: 0.3; }
+  50% { transform: translateY(-6px); opacity: 1; }
+}
+
+.exit-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.exit-popup-box {
+  width: 520px;
+  max-width: 90vw;
+  background: #111827;
+  color: #ffffff;
+  border-radius: 16px;
+  padding: 28px 24px;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.exit-popup-box h2 {
+  margin: 0 0 12px;
+  font-size: 32px;
+}
+
+.exit-popup-box p {
+  margin: 0 0 24px;
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+.exit-popup-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.exit-popup-actions button {
+  min-width: 140px;
+  height: 56px;
+  border: none;
+  border-radius: 10px;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.exit-popup-actions button:focus {
+  outline: 4px solid #60a5fa;
+  outline-offset: 2px;
+}

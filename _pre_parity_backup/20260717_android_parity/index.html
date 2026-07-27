@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="width=1920, height=1080, initial-scale=1.0, maximum-scale=1.0">
+    <title>Vypa Player</title>
+
+    <link rel="stylesheet" href="css/style.css" />
+
+    <!-- Pusher -->
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+
+    <!-- Samsung TEP library. $WEBAPIS is resolved by the platform at runtime;
+         it 404s in a desktop browser and in the emulator, which is expected —
+         js/tep.js probes for `webapis` and falls back when it is absent.
+         Required by every webapis.* call ("Library Required", TEP 2025 decks). -->
+    <script src="$WEBAPIS/webapis/webapis.js"></script>
+
+    <script>
+      // Unipicture rotation for this build. 0 = landscape (no rotation).
+      // Portrait panels should set 270 to match the documented sample.
+      window.VYPA_TEP_ROTATION = 0;
+
+      // Unipicture SoC-scaler image path. Left OFF: images render exactly as
+      // they do on VYPA2 today. Uncomment ONLY on a Partner-signed 6.5 test
+      // panel, and confirm images are actually VISIBLE — the scaler plane may
+      // composite behind the opaque page background, in which case show()
+      // succeeds while the screen stays black.
+      // See README → "Must verify on hardware before enabling Unipicture".
+      // window.VYPA_TEP_UNIPICTURE = true;
+    </script>
+</head>
+
+<body>
+
+<!-- ================= Playlist Downloading Buffer SCREEN ================= -->
+<div id="bufferOverlay" class="buffer-overlay" style="display:none;">
+	<div class="buffer-box">
+	  <div class="buffer-logo">VYPΛ</div>
+	  <div id="bufferText" class="buffer-text">Downloading playlist…</div>
+	  <div class="dots"><span></span><span></span><span></span></div>
+	</div>
+</div>
+
+<!-- ================= LOADING SCREEN ================= -->
+<div id="loadingScreen" class="screen">
+    <div class="center">
+        <div class="loader"></div>
+        <p>Loading...</p>
+    </div>
+</div>
+
+<!-- ================= INTRO SCREEN ================= -->
+<div id="introScreen" class="screen" style="display:none;">
+    <video id="introVideo" muted autoplay playsinline></video>
+</div>
+
+
+<!-- ================= PAIRING SCREEN ================= -->
+<div id="pairingScreen" class="screen" style="display:none;">
+
+    <!-- Top Right Code -->
+    <div class="pairing-top">
+        <div id="codeTitle">YOUR PAIRING CODE</div>
+
+        <div id="codeBox">
+            <span id="pairingCode">------</span>
+        </div>
+
+        <div id="countdown">Expires in: 60s</div>
+    </div>
+
+    <!-- Left Instructions -->
+    <div class="pairing-steps">
+        <h2>REGISTRATION STEPS</h2>
+
+        <p><span class="step">STEP 1</span> - LOGIN TO YOUR ACCOUNT</p>
+        <p><span class="step">STEP 2</span> - GO TO SCREENS &amp; "ADD (YOUR FIRST) SCREEN"</p>
+        <p><span class="step">STEP 3</span> - TYPE IN YOUR SCREEN NAME &amp; "ADD SCREEN"</p>
+        <p><span class="step">STEP 4</span> - CLICK THE "PAIR" BUTTON</p>
+        <p><span class="step">STEP 5</span> - TYPE THE 6-DIGIT CODE ABOVE</p>
+        <p><span class="step">STEP 6</span> - CLICK PAIR DEVICE</p>
+    </div>
+
+    <img src="assets/vypa_logo.png" class="logo" />
+
+</div>
+
+<!-- ================= ERROR SCREEN ================= -->
+<div id="errorScreen" class="screen" style="display:none;">
+    <div class="center">
+        <h2>Error</h2>
+        <p id="errorMessage">Something went wrong</p>
+    </div>
+</div>
+
+<!-- ================= SUCCESS / PAIRED SCREEN ================= -->
+<div id="successScreen" class="screen" style="display:none;">
+    <div class="center">
+        <h2>Device Paired Successfully</h2>
+    </div>
+</div>
+
+<!-- ================= NO PLAYLIST SCREEN ================= -->
+<div id="noPlaylistScreen" class="screen" style="display:none;">
+    <div class="center">
+        <h2>No Playlist Assigned Yet</h2>
+        <p>Please assign a playlist from your dashboard.</p>
+    </div>
+</div>
+
+
+<!-- ================= PLAYER SCREEN ================= -->
+<div id="playerScreen" class="screen" style="display:none;">
+
+    <!-- Video content -->
+    <video id="videoPlayer" autoplay playsinline style="display:none;
+        position:absolute; top:0; left:0; width:100%; height:100%;
+        object-fit:contain; background:#000;"></video>
+
+    <!-- Image content -->
+    <img id="imagePlayer" style="display:none;
+        position:absolute; top:0; left:0; width:100%; height:100%;
+        object-fit:contain; background:#000;" />
+
+    <!-- Audio content (hidden element) -->
+    <audio id="audioPlayer" style="display:none;"></audio>
+
+    <!-- ✅ NEW: Branded audio visualizer canvas -->
+    <canvas id="audioVisualizer" style="display:none;
+        position:absolute; top:0; left:0; width:100%; height:100%;
+        background:#000;"></canvas>
+
+    <!-- ✅ NEW: Web URL / Dashboard WebView iframe -->
+    <iframe id="webviewFrame"
+            src="about:blank"
+            frameborder="0"
+            scrolling="no"
+            allowfullscreen
+            style="display:none;
+                   position:absolute; top:0; left:0;
+                   width:100%; height:100%;
+                   border:none; background:#000;">
+    </iframe>
+
+</div>
+
+
+<!-- ================= EXIT POPUP ================= -->
+<div id="exitPopup" class="exit-popup" style="display:none;">
+  <div class="exit-popup-box">
+    <h2>Exit VYPA Player?</h2>
+    <p>Do you want to exit the application?</p>
+
+    <div class="exit-popup-actions">
+      <button id="exitYesBtn" type="button">Yes</button>
+      <button id="exitNoBtn" type="button">No</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= JS FILES ================= -->
+<script>
+console.log("VYPA booting...");
+</script>
+<script src="js/state.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/device.js"></script>
+<script src="js/tep.js"></script>              <!-- NEW: TEP capability probe + Unipicture adapter -->
+<script src="js/apiService.js"></script>       <!-- updated: 20 s guard, PoP hook, telemetry init -->
+<script src="js/ui.js"></script>
+<script src="js/pairing.js"></script>
+<script src="js/intro.js"></script>
+<script src="js/cacheService.js"></script>
+<script src="js/scheduling.js"></script>        <!-- NEW: date-range dayparting + minute ticker -->
+<script src="js/playerEngine.js"></script>     <!-- updated: URL/WebView + audio visualizer -->
+<script src="js/playerInit.js"></script>
+<script src="js/telemetry.js"></script>         <!-- NEW: hardware health telemetry (15 s loop) -->
+<script src="js/proofOfPlay.js"></script>       <!-- NEW: PoP screenshot engine -->
+<script src="js/app.js"></script>
+
+</body>
+</html>

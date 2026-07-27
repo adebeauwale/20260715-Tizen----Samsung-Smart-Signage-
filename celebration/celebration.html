@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Celebration</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Bebas+Neue&family=Cinzel:wght@400;600;700;900&display=swap" rel="stylesheet" />
+<style>
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { width:100%; height:100%; overflow:hidden; background:#000; }
+    #stage {
+      position: absolute;
+      top: 0; left: 0;
+      transform-origin: top left;
+    }
+    @keyframes vypa-confetti-fall {
+      0%   { transform: translateY(-30px) rotate(0deg);    opacity:1; }
+      100% { transform: translateY(1120px) rotate(600deg); opacity:.5; }
+    }
+    @keyframes vypa-money-fall {
+      0%   { transform: translateY(-150px); opacity:0; }
+      8%   { opacity:1; }
+      92%  { opacity:1; }
+      100% { transform: translateY(1200px); opacity:0; }
+    }
+    @keyframes vypa-birthday-glow {
+      0%,100% { filter: brightness(1); }   50% { filter: brightness(1.3); }
+    }
+    @keyframes vypa-float-emoji {
+      0%,100% { transform: translateY(0) rotate(-5deg); }
+      50%     { transform: translateY(-12px) rotate(5deg); }
+    }
+    @keyframes vypa-baller-glow {
+      0%,100% { filter: brightness(1); }   50% { filter: brightness(1.4); }
+    }
+    @keyframes vypa-gold-sweep {
+      0%   { background-position: -400px center; }
+      100% { background-position:  400px center; }
+    }
+    @keyframes vypa-pulse-crown {
+      0%,100% { transform: scale(1) rotate(-5deg);    filter: drop-shadow(0 0 14px #ffd700); }
+      50%     { transform: scale(1.18) rotate(5deg);  filter: drop-shadow(0 0 14px #ffd700); }
+    }
+    @keyframes vypa-neon-buzz {
+      0%, 38%, 62%, 100% { opacity:1;    filter:brightness(1.2);  }
+      50%                { opacity:0.06; filter:brightness(0.08); }
+    }
+    @keyframes vypa-name-bounce {
+      0%,100% { transform:scale(1);    }
+      50%     { transform:scale(1.07); }
+    }
+    /* ── Baller Alert — cinematic VIP layout ── */
+    @keyframes vypa-baller-beam1 {
+      0%   { opacity:.22; transform: rotate(-12deg); }
+      50%  { opacity:.50; }
+      100% { opacity:.26; transform: rotate(12deg);  }
+    }
+    @keyframes vypa-baller-beam2 {
+      0%   { opacity:.16; transform: rotate(10deg);  }
+      50%  { opacity:.40; }
+      100% { opacity:.20; transform: rotate(-10deg); }
+    }
+    @keyframes vypa-spot-a { 0% { transform: rotate(-30deg); opacity:.35; } 50% { opacity:.6; } 100% { transform: rotate(30deg); opacity:.4; } }
+    @keyframes vypa-spot-b { 0% { transform: rotate(26deg); opacity:.25; } 50% { opacity:.5; } 100% { transform: rotate(-26deg); opacity:.3; } }
+    @keyframes vypa-spark  { 0%,100% { transform: scale(.6); opacity:.2; } 50% { transform: scale(1.3); opacity:1; } }
+    @keyframes vypa-baller-zoom  { 0% { transform: scale(1.04); } 100% { transform: scale(1.12); } }
+    @keyframes vypa-baller-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes vypa-baller-shine { 0% { background-position: 0% center; } 100% { background-position: 220% center; } }
+    @keyframes vypa-baller-glare {
+      0%   { transform: translateX(-120%) skewX(-14deg); opacity:0;  }
+      12%  { opacity:.6; }
+      45%  { opacity:0;  }
+      100% { transform: translateX(320%)  skewX(-14deg); opacity:0;  }
+    }
+    @keyframes vypa-flame {
+      0%,100% { transform: scaleY(1)    translateX(0);    opacity:1;   }
+      50%     { transform: scaleY(1.18) translateX(-0.5px); opacity:.85; }
+    }
+  
+</style>
+</head>
+<body>
+<div id="stage"><div id="celeb" style="position:absolute;inset:0;"></div></div>
+<script src="celebration-engine.js"></script>
+<script src="celebration-build.js"></script>
+<script>
+  (function(){
+    var cfg = {};
+    try { var h=(location.hash||'').replace(/^#/,''); if(h) cfg = JSON.parse(decodeURIComponent(h)) || {}; } catch(e){}
+    var layoutW = cfg.layoutW || 1920, layoutH = cfg.layoutH || 1080;
+    var stage = document.getElementById('stage');
+    stage.style.width = layoutW + 'px'; stage.style.height = layoutH + 'px';
+    stage.style.left = '0'; stage.style.top = '0';
+    stage.style.background = cfg.bg || '#000';
+    function vpW(){ return (window.visualViewport && window.visualViewport.width)  || document.documentElement.clientWidth  || window.innerWidth; }
+    function vpH(){ return (window.visualViewport && window.visualViewport.height) || document.documentElement.clientHeight || window.innerHeight; }
+    function fit(){ var W=vpW(),H=vpH(); if(!W||!H) return; var s=Math.min(W/layoutW,H/layoutH);
+      stage.style.transform='translate('+((W-layoutW*s)/2)+'px,'+((H-layoutH*s)/2)+'px) scale('+s+')'; }
+    fit(); window.addEventListener('resize',fit); window.addEventListener('load',fit);
+    if(window.visualViewport) window.visualViewport.addEventListener('resize',fit);
+    setTimeout(fit,250); setTimeout(fit,1000);
+    var host = document.getElementById('celeb');
+    function draw(c){ var data=(c&&c.data)||{}; if((c&&c.kind)==='moneyRain') VypaCelebration.renderMoneyRain(host,data); else VypaCelebration.renderCelebration(host,data); }
+    // Player can push new name/media/colors live, no reload:
+    window.VYPA_setCelebration = function(c){ try{ c=(typeof c==='string')?JSON.parse(c):c; }catch(e){ return; } draw(c||{}); };
+    draw(cfg);
+  })();
+</script>
+</body>
+</html>

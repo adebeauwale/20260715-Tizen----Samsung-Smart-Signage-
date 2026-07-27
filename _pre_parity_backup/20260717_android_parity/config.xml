@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns:tizen="http://tizen.org/ns/widgets" xmlns="http://www.w3.org/ns/widgets" id="https://packages.vypa.co/downloads/tizen" version="1.1.0" viewmodes="maximized">
+    <access origin="https://app.vypa.co" subdomains="true"></access>
+    <access origin="https://host.vypa.co" subdomains="true"></access>
+    <access origin="https://js.pusher.com" subdomains="true"></access>
+    <access origin="https://*.pusher.com" subdomains="true"></access>
+    <access origin="https://*.pusherapp.com" subdomains="true"></access>
+    <tizen:allow-navigation>https://app.vypa.co</tizen:allow-navigation>
+    <tizen:allow-navigation>https://host.vypa.co</tizen:allow-navigation>
+    <tizen:application id="bxyoUHWibT.VYPA2" package="bxyoUHWibT" required_version="6.5"/>
+    <author href="https://vypa.co" email="support@vypa.co">VYPA Technologies Inc.</author>
+    <content src="index.html"/>
+    <tizen:content-security-policy>default-src 'self' https: http: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.pusher.com; connect-src 'self' https://app.vypa.co https://host.vypa.co https://*.pusher.com https://*.pusherapp.com wss://*.pusher.com wss://*.pusherapp.com; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline';</tizen:content-security-policy>
+    <description>VYPA Digital Signage Player is a secure digital signage application for Samsung Smart Signage displays. It connects screens to the VYPA platform for remote content management, campaign scheduling, and real-time media playback.</description>
+    <feature name="http://tizen.org/feature/screen.size.normal.1080.1920"/>
+    <icon src="vypa_icon.png"/>
+    <license>Proprietary</license>
+    <tizen:metadata key="http://tizen.org/metadata/app_ui_type/base_screen_resolution" value="extensive"/>
+    <name>VYPA Digital Signage Player</name>
+    <tizen:privilege name="http://tizen.org/privilege/filesystem.read"/>
+    <tizen:privilege name="http://tizen.org/privilege/filesystem.write"/>
+    <tizen:privilege name="http://developer.samsung.com/privilege/productinfo"/>
+    <tizen:privilege name="http://developer.samsung.com/privilege/contentsdownload"/>
+    <tizen:privilege name="http://developer.samsung.com/privilege/network.public"/>
+    <!-- TEP: required for webapis.systemcontrol.* (Node.js, CustomAppInfo).
+         Only granted to packages signed with a Samsung Partner-level certificate. -->
+    <tizen:privilege name="http://developer.samsung.com/privilege/systemcontrol"/>
+    <tizen:profile name="tv-samsung"/>
+    <tizen:setting screen-orientation="auto-rotation" context-menu="enable" background-support="disable" encryption="disable" install-location="auto" hwkey-event="enable"/>
+</widget>

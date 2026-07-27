@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:samsungtizenos.com)",
+      "Bash(mkdir -p celebration)",
+      "Bash(cp __TRACKED_VAR__/celebration.html celebration/)",
+      "Bash(cp __TRACKED_VAR__/celebration-engine.js celebration/)",
+      "Bash(cp __TRACKED_VAR__/celebration-build.js celebration/)",
+      "Bash(node tools/test_parity.js)",
+      "Bash(python -c \"import xml.dom.minidom as m; m.parse\\('config.xml'\\); m.parse\\('SSSP/sssp_config.xml'\\); print\\('both XML files valid'\\)\")",
+      "Bash([ -f \"$MEM\" ])",
+      "WebFetch(domain:developer.samsung.com)",
+      "WebFetch(domain:gist.github.com)",
+      "Skill(artifact-design)",
+      "Skill(artifact-design:*)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\adebo\\.claude\\projects\\e--2026-vypa-players-20260715-Tizen----Samsung-Smart-Signage-\\memory"
+    ]
+  }
+}
