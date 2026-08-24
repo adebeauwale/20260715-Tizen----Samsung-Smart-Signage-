@@ -82,6 +82,13 @@ function initializePlayer() {
   //    screensaver / keep-awake mechanism internally).
   preventSleep();
 
+  // On/off schedule. Started from the CACHED rules, before any network call:
+  // a screen rebooting at 3am inside its shutdown window must come back dark,
+  // not blaze at full brightness until the server answers.
+  if (typeof startScreenPowerTicker === "function") {
+    startScreenPowerTicker();
+  }
+
   // 3️⃣ Connect to PRIVATE user channel (JWT auth)
   //    Handles: playlist_updated, new-content, and wires up PoP listener.
   connectToUserChannel(
@@ -250,6 +257,15 @@ function fetchPlayerData(trackNew) {
   getPlayer(pairedDevice.screenId)
     .then(function (data) {
       console.log("Player response:", data);
+
+      // On/off hours ride along with the playlist. Apply them before anything
+      // else so a schedule change takes effect on this response, and cache them
+      // so the rules survive the next outage. `schedule: null` is a real answer
+      // — the screen was un-assigned, and the player must forget the old hours
+      // rather than keep switching itself off.
+      if (typeof applyScreenSchedule === "function" && data && "schedule" in data) {
+        applyScreenSchedule(data.schedule || null);
+      }
 
       // Refresh per-screen Pusher creds if the server rotated them; persist so
       // the next boot connects with the right app before any fetch.

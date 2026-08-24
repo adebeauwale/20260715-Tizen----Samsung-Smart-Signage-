@@ -93,10 +93,46 @@ function rebuildActivePlaylist() {
 }
 
 /* ---------------------------------------------------------
+   SCHEDULED ON/OFF HOOK
+   ─────────────────────────────────────────────────────────
+   screenPower.js calls this on every transition. Going dark
+   only needs the timers stopped — the overlay is already up.
+   Coming back needs playback kicked off again, because
+   playCurrentItem() returned early for the whole window and
+   there is no pending timer to wake it.
+   --------------------------------------------------------- */
+
+function onScreenPowerChange(isOn) {
+  if (!isOn) {
+    clearTimeout(imageTimer);
+    return;
+  }
+
+  if (!playlistItems || !playlistItems.length) {
+    // Nothing cached to resume — pull fresh content instead of idling dark
+    // until the next hourly re-sync.
+    if (typeof reloadPlaylist === "function") reloadPlaylist(false);
+    return;
+  }
+
+  // Re-filter first: a date window may have opened or closed while we were off.
+  if (typeof rebuildActivePlaylist === "function") rebuildActivePlaylist();
+  playCurrentItem();
+}
+
+/* ---------------------------------------------------------
    ITEM ROUTER
    --------------------------------------------------------- */
 
 function playCurrentItem() {
+  // Out of hours: the overlay already hides the screen, but there is no point
+  // decoding video or burning bandwidth behind it — and a scheduled shutdown
+  // must not be logged as proof-of-play for content nobody can see. Idle here
+  // and let onScreenPowerChange() restart playback when the window ends.
+  if (typeof screenIsScheduledOff === "function" && screenIsScheduledOff()) {
+    return;
+  }
+
   clearTimeout(imageTimer);
   _resetItemResilience();   // reset per-item guards / retry / dwell timers
 
