@@ -43,6 +43,47 @@ function configurePusher(key, cluster) {
 
 let activeBaseUrl = SIGNAGE_BASE;
 
+/* =========================================
+   PLATFORM PERSISTENCE
+
+   activeBaseUrl used to live only in memory. useCategory() set it correctly
+   after pairing, so a freshly paired screen worked -- but the value did not
+   survive a reload. On every restart (a power cut, a TV firmware update, the
+   app being relaunched by the watchdog) it reset to the signage platform.
+
+   A HOST screen then asked app.vypa.co for a playlist that only exists on
+   host.vypa.co, got nothing back, and the player showed its empty-playlist
+   screen -- which reads as "no campaigns" when the real cause was asking the
+   wrong server. Two FireOS host screens never played a single frame between
+   May and August 2026 for exactly this reason.
+
+   The choice is now written down when it is learned and read back at load,
+   before anything requests a playlist. Storage is wrapped because some TV
+   browsers throw on localStorage in private/kiosk contexts -- a failure to
+   remember must never stop the player from running.
+========================================= */
+
+const PLATFORM_KEY = "vypa_selected_platform";
+
+function savePlatform(category) {
+  try { localStorage.setItem(PLATFORM_KEY, String(category || "")); }
+  catch (e) { console.warn("Platform not persisted:", e); }
+}
+
+function loadPlatform() {
+  try { return localStorage.getItem(PLATFORM_KEY); }
+  catch (e) { return null; }
+}
+
+(function restorePlatformOnLoad() {
+  const saved = loadPlatform();
+  if (saved) {
+    activeBaseUrl = saved.toLowerCase() === "host" ? HOST_BASE : SIGNAGE_BASE;
+    console.log("♻️ Restored platform:", saved, "->", activeBaseUrl);
+  }
+})();
+
+
 function joinUrl(base, path) {
   const b = (base || "").replace(/\/+$/, "");
   const p = (path || "").replace(/^\/+/, "");
@@ -59,6 +100,10 @@ function useCategory(category) {
       ? HOST_BASE
       : SIGNAGE_BASE;
 
+
+  // Write it down, or the switch is lost on the next reload and a host
+  // screen silently reverts to asking the signage platform.
+  savePlatform(category);
   console.log("🔀 Active Base URL:", activeBaseUrl);
 }
 

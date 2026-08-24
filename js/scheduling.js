@@ -13,13 +13,43 @@
    ========================================================= */
 
 /* Parse a date-ish value into epoch ms, or null if absent/unparseable.
-   Accepts "YYYY-MM-DD", "YYYY-MM-DD HH:MM:SS", ISO, or epoch numbers. */
+   Accepts "YYYY-MM-DD", "YYYY-MM-DD HH:MM:SS", ISO, or epoch numbers.
+
+   A campaign day belongs to the SCREEN, not to UTC. A host who books the 13th
+   is buying the 13th where their screen stands, midnight to midnight on that
+   wall clock — so a bare date must be read as LOCAL midnight.
+
+   That is not what Date.parse does. ECMAScript says a date-ONLY string
+   ("2026-08-13") is UTC, while a date-TIME string with no zone
+   ("2026-08-13T00:00:00") is local. The two differ by the device's offset, and
+   the old code fell into the first case: `s.replace(" ", "T")` finds no space
+   in a bare date, so it stayed date-only and parsed as UTC midnight.
+
+   On a Toronto screen (UTC-4 in summer) that ran every window four hours early:
+   an ad booked for the 13th started at 8pm on the 12th and stopped at 8pm on
+   the 13th, cutting four hours off the last day the advertiser paid for. In
+   Lagos (UTC+1) it ran an hour late at both ends instead.
+
+   Android has always been right — SimpleDateFormat parses in device local time
+   — so this is what puts the JS players back in step with it. */
 function _vypaParseDate(v) {
   if (v === null || v === undefined || v === "") return null;
   if (typeof v === "number") return v;
   var s = String(v).trim();
   if (!s || s === "0000-00-00" || s === "0000-00-00 00:00:00") return null;
-  // Normalise "YYYY-MM-DD HH:MM:SS" → ISO so Safari/WebKit parses it.
+
+  // A bare "YYYY-MM-DD" gets an explicit midnight so it parses as LOCAL.
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    var d = new Date(
+      parseInt(s.slice(0, 4), 10),
+      parseInt(s.slice(5, 7), 10) - 1,   // JS months are 0-based
+      parseInt(s.slice(8, 10), 10)
+    );
+    return isNaN(d.getTime()) ? null : d.getTime();
+  }
+
+  // Normalise "YYYY-MM-DD HH:MM:SS" → ISO so Safari/WebKit parses it. With a
+  // time component and no zone, Date.parse is already local.
   var iso = s.indexOf("T") === -1 ? s.replace(" ", "T") : s;
   var t = Date.parse(iso);
   if (isNaN(t)) {

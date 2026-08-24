@@ -123,6 +123,85 @@ function buildCacheFilename(item) {
   return ext ? `${base}.${ext}` : base;
 }
 
+/**
+ * Delete cached files that nothing in the current playlist points at.
+ *
+ * Nothing ever removed anything before, so every file this screen had ever
+ * played stayed in the cache folder for the life of the install. That matters
+ * more now: media is being repointed from the raw upload to the transcoder's
+ * output (".../clip.mov" -> ".../converted/clip.mp4"), and buildCacheFilename
+ * takes its extension from the URL, so every converted item would otherwise
+ * leave its original behind for good. Filling the device is not a harmless
+ * waste — once writes start failing there is no file to show, which is a black
+ * screen.
+ *
+ * CELEBRATION MEDIA: the Baller Alert / Money Rain overlay files live in this
+ * same folder under celeb_* names and belong to a layout item's nested payload,
+ * not to any playlist row. They must be added to the keep set explicitly — a
+ * prune that only walked the playlist would delete every overlay on the first
+ * run and break the feature silently.
+ *
+ * SAFETY: driven by the item list that was just cached. An empty list means a
+ * failed or offline playlist fetch, and clearing the cache in that moment would
+ * black out a screen that was playing perfectly well from disk. Wasting a
+ * little space is always cheaper than losing the screen.
+ */
+function pruneCacheFolder(cacheDir, items) {
+  if (!cacheDir || !items || !items.length) return;
+
+  var keep = {};
+  var keepCount = 0;
+
+  items.forEach(function (it) {
+    var url = it.url || it.src || it.file || it.media_url || it.path;
+    if (url) { keep[buildCacheFilename(it)] = true; keepCount++; }
+
+    // Overlay media hangs off the layout item, not off a playlist row.
+    try {
+      (celebrationMediaUrls(it) || []).forEach(function (cu) {
+        keep[celebrationCacheFilename(cu)] = true;
+        keepCount++;
+      });
+    } catch (e) { /* a malformed payload must never trigger deletions */ }
+  });
+
+  if (keepCount === 0) return;   // nothing recognisable — treat as a bad fetch
+
+  try {
+    cacheDir.listFiles(
+      function (files) {
+        files.forEach(function (f) {
+          try {
+            if (f.isDirectory) return;
+            if (keep[f.name]) return;
+
+            /*
+             * Overlay assets are never pruned, even when they look unreferenced.
+             *
+             * Their names are only reachable by parsing a nested celebration
+             * payload, so ANY hiccup in that parse — a malformed JSON blob, a
+             * schema change, a layout item that failed to load this cycle —
+             * makes a live overlay file look like an orphan. Deleting it breaks
+             * Baller Alert / Money Rain silently, and nobody would connect the
+             * two. They are a handful of small files; keeping a stale one costs
+             * nothing next to losing one that is in use.
+             */
+            if (f.name.indexOf("celeb_") === 0) return;
+
+            cacheDir.deleteFile(f.fullPath);
+            console.log("🧹 Pruned stale cache file:", f.name);
+          } catch (e) {
+            console.warn("Could not prune", f && f.name, e);
+          }
+        });
+      },
+      function (err) { console.warn("listFiles failed during prune:", err); }
+    );
+  } catch (e) {
+    console.warn("pruneCacheFolder failed:", e);
+  }
+}
+
 function saveCachedPlaylist(items) {
   try {
     localStorage.setItem(MANIFEST_KEY, JSON.stringify(items));
@@ -336,6 +415,7 @@ function cachePlaylistMedia(items, done) {
           function next() {
             if (idx >= items.length) {
               saveCachedPlaylist(items);
+              pruneCacheFolder(cacheDir, items);
               return done(items);
             }
 
